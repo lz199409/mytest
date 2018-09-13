@@ -1,0 +1,369 @@
+一、PostgreSQL
+1.PostgreSQL特性
+	1.可以运行在主流操作系统上，包括Linux、Unix、以及Windows上
+	2.是完全的事务安全性数据库，完整的支持外键、联合、视图、触发器和存储过程
+	3.支持大多数标准数据类型：
+		整形、数值型、布尔型、字符型、日期型、时间间隔和时间型、
+		支持二进制大对象，包括图片、声音和视频
+	4.PostgreSQL对很多高级开发语言有原生编程接口
+		C/C++、Java、Net、Perl、Python、Ruby等语言
+	5.作为企业级数据库，支持各种高级功能
+		多版本并发控制MVCC、按时间点恢复(PITR)、表空间、异步复制、
+		嵌套事务、在线热备、复杂查询的规划以及优化、
+		为容错二进行的预写日志
+	6.支持国际字符集、多字节编码并支持使用当地语言进行排序
+		大小写处理和格式化等操作
+	7.能管理大量的数据，以及允许大量并发访问时具有完全的高伸缩性
+2.PostgreSQL系统的极限值
+	最大单个数据库大小      不限
+	最大数据单表大小        32TB
+	单条记录最大            1.6TB
+	单字段最大允许          1GB
+	单表允许最大记录数			不限
+	单表最大字段数					250-1600(取决于字段类型)
+	单表最大索引数          不限
+3.POC测试
+	POC测试，即Proof of Concept(为观点提供证据)
+	是业界流行的针对客户具体应用的验证性测试，
+	根据用户对采用系统提出的性能要求和扩展需求的指标，
+	在选用服务器上进行真实数据的运行，对承载用户数据量和运行时间进行实际测算，
+	并根据用户未来业务扩展的需求加大数据量以验证系统和平台的承载能力和性能变化。
+
+
+二、odoo中的数据类型
+	1. 首先需要在py文件中导入需要的模块
+		from odoo import api, fields, models, _
+	2. Char
+		短文本类型
+		有长度限制的字符串字段，通常显示在单行字符串
+		属性：
+			size(int): 字段的最大长度值
+			translate(bool): 值是否可以被翻译
+			required(bool): 该字段是否必填
+			copy(bool): 是否拷贝
+			readonly(bool): 是否是只读
+			states: 状态
+			index: 索引
+			default: 默认值
+	3. Boolean
+		一般用来判断一个事件正反面
+		实例：
+			active = fields.Boolean(default=True, string=u"有效")
+			active = fields.Boolean(default=True, string=u"是否归档", track_visibility="onchange")
+	4. Integer
+		一般用来记录当前整形数据
+		实例：
+			sequence = fields.Integer(string=u"排序", default=10)
+	5. Float
+		精确位数是由属性提供的
+		属性：
+			degits: 是一个元组(小数的位数, 保留小数位数)
+		实例：
+			list_price = fields.Float(string=u"成本", default=0.0)
+			price_unit = fields.Float(string=u"单价", required=True, default=0.0, digits=(10, 2))
+	6. Text
+		和字符串非常相似，但是他被用作较大的内容，不限大小，通常显示为多行文本框
+		属性：
+			translate: 此字段是否可被翻译
+		实例：
+			note = fields.Text(u"备注")
+			note = fields.Text(u"备注", track_visibility="onchange")
+	7. Html
+		和text类似，但是比text多了编辑器
+		可以对文本进行编辑，比如上传图片之类的
+		实例：
+			content = fields.Html(u"正文", strip_style=True)
+	8. Date
+		在客户端时区里面返回一个能被看见的当前日期格式
+		属性
+		时间戳(datetime): 可选的datetime值用来替代当前的date和time
+		(必须是datetime,正常的date不能时区之间进行转换)
+		实例：
+			delivery_date = fields.Date(u"要求交货日期")
+			delivery_date = fields.Date(u"日期", track_visibility="onchange")
+	9. Datetime
+		把时间戳转化为客户端时区，这并不是对其初始化，他只是在客户端显示，
+		如果要初始化，需要用fields.datetime.now()来取代
+		属性：
+		时间戳：
+			能够被装换成客户端时区（UTC中显示）
+		实例：
+			date_order = fields.Datetime(string=u'单据日期')
+			date_order = fields.Datetime(string=u"单据日期", required=True, readonly=True, index=True, default=fields.Datetime.now)
+	10. Selection
+		selection指定该字段的值，它可能是列表值，字符串，模块的办法，或方法名
+		selection_add：这是对selection的延伸，他是(值、字符串)列表
+		在继承和延伸里，selection是一个必备属性
+		实例：
+			sex = fields.Selection([1, u'男'),(2, u'女')], string=u'性别', defaults=1)
+			priority = fields.Selection([
+        (0, u"低"),
+        (1, u"正常"),
+        (2, u"高"),
+      ], default=0, index=True, string=u"优先级")
+	11. Many2one(多对一)
+		这个字段的值是一个0或者1(0是无记录,1是单个记录)
+		属性：
+			comodel_name: 目标模块的名称(字符串)
+			domain: 在客户端候选值里面设定一个可选的domain
+			context: 当客户端处理字段(字典)设定可选的context
+			ondelete: 当参考数值被删除怎么办？他可能是值为空、限制或串联
+			auto_join: 通过搜索产生的join的值(布尔和false)
+			delegate: 设置值为true是为了让标签模块的字段去访问当前模块(相当于继承)
+			除了在related字段扩展字段里，否则comodel_name是必备的
+		实例：
+			user_id = fields.Many2one("res.users", string=u"负责人")
+			user_id = fields.Many2one("res.users", string=u"负责人", index=True, track_visibility="onchange",
+                              default=lambda self: self.env.user)
+	12. Many2many(多对多)
+		Many2many字段是一个记录集
+		属性：
+			comodel_name: 标签模块名称(string)
+			除了在related字段或者扩展字段里，否则comodel_name是必备的
+		实例：
+			tags_ids = fields.Many2many("project.tags", string=u"标签")
+			user_ids = fields.Many2many("res.users", "my_sale_res_users", "sale_id", "user_id", string=u"业务员")
+										 关联的表名,关联两张表的表名(自己命名),第一张表字段名, 第二张表字段名
+	13. Reference
+
+		@api.model
+		def _select_objects(self):
+			records = self.env['ir.model'].search([])
+			return [(record.model, record.name) for record in records] + [('', '')]
+
+		id_object = fields.Reference(string=u"关联", selection="_select_objects")
+	14. 自动化属性
+		属性：
+			_log_access: 设置为False时会取消创建人和创建日期等字段
+			create_date: 记录创建日期Type:Datetime
+			create_uid: 第一次创建人 Type: res.users
+			write_date: 最后一次修改日期Type:Datetime
+			write_uid: 最后一次修改人 Type: res.users
+			__last_update 最后一次修改日期
+			display_name: 对外显示的名称
+	补充：
+		1. help这个属性是当你的鼠标放到label上面之后显示的提示内容
+		2. Many2many关联两张表的时候如果不填关联的字段名，那么两张表会
+		   自动关联两张表自带的id字段
+		
+	
+
+三、 模块的结构
+	目录：
+		一个模块被组织在几个目录中：
+			data/: 演示和数据XML
+			doc/: 存放整个文件的说明
+			i18n/: 存放翻译文件
+			models/: 定义模型,表，类，方法等等
+			report/: 打印用
+			security/: 权限用，定义视图，csv的导入方式
+			controllers/: 包含控制器(HTTP路径)
+			views/: 包含视图和模板
+			static/: 包含CSS, JS, IMG, LIB...
+			test/: 测试文档，测试用例等
+			wizard/: 向导，做到承上启下的作用，从一个界面跳到另一个界面
+
+四、 菜单定义
+
+	注意：
+		操作必须要在声明菜单之前进行定义
+		xml文件是从上到下按顺序执行的，所以必须提前声明
+	
+	menuitem 菜单
+		如何定义菜单
+		如何合理设计菜单
+		如何继承菜单，删除菜单
+	属性：
+		id: 定义唯一标记
+		sequence: 排序 值为数据0最靠前
+		parent: 指定父节点菜单
+		action: 定义窗体事件
+		groups: 绑定权限，只有绑定组的成员才能看见这个菜单，菜单可以绑定多个组
+		name: 菜单名称
+	实例：
+		<menuitem id="menu_0" name="工作台" sequence="0"/>
+		<menuitem id="menu_0_0" name="网站" sequence="100"/>
+		<menuitem id="menu_0_0_1" name="站点" sequence="1" parent="menu_0_0"/>
+
+五、数据文件结构XML(也存在一些csv数据文件)
+	数据文件需要在manifest data或者demo字段里列出，才能在模块安装更新之后正确加载
+	
+	Action&Menu
+		Odoo把菜单和菜单动作也保存到数据库里，通过上面data数据文件添加
+	<menuitem>这个标签默认是存放在ir.ui.menu这张数据表中
+
+	Odoo的XML数据文件结构大致如下：
+		在根元素 odoo 下有任意多的操作元素：
+		<!-- 数据文件的根元素 -->
+		<odoo>
+		  <operation/>
+		  ...
+		</odoo>
+		数据文件是被按顺序进行处理的, 进行的操作只能够指向到之前已经定义好的操作
+	
+	核心操作：
+		记录(record)
+			适当的定义或者更新一个数据的记录，他有如下属性：
+			模型(model)(必须的):
+				增加(或更新)的模型(model)的名字
+			id:
+				记录(record)的外部标识
+				在增加记录(record)时，允许后续的定义来修改或者参考这个记录(record)
+				在修改记录(record)时，指向要修改的记录(record)
+			内容(context):
+				在增加记录(record)时使用的context
+			强制更新(forcecreate)
+				在更新模式中，如果记录(record)不存在的话是否创建它
+				需要一个外部id,默认为True
+		字段(field)
+			作用：
+				每个记录(record)都可以由 字段(field) 标签组成, 
+				定义在创建记录(record)时设置的值. 一个 记录(record) 如果没有
+				字段(field) 的话会使用所有默认值(创建时) 或者什么也不做(更新时).
+			属性：
+				name:
+					设置字段(field)的名字，和各种方法来定义自己
+				空
+					如果没有给这个字段(field)提供值, 一个隐藏的 False 会设置进去.
+					可以用于清空一个字段(field), 或者避免使用这个字段(field)的默认值.
+				查找(search)
+					用于 关系字段(field), 在这个字段(field)的model上需要一个 domain 
+					将会评估这个domain查找使用这个字段field的模型(model)并且设置search
+					的结果作为这个字段(field)的值，如果返回的结果是一个Many2one则只会使用第一个结果
+				引用(ref)
+					如果提供了一个ref属性, 他的值必须是有效值的 外部id, 其会被查找到并且设置为字段(field)的值.
+					大部分都是为了 Many2one 和 Reference 字段(field)
+				类型(type)
+
+六、 基础视图
+	这里的视图是模式里的
+	定义了模型在后台的实现方式tree form grahp等
+	视图定义其实是在ir.ui.view插入数据
+	<record model="ir.ui.view" id="view_id">
+		<field name="name">view.name</field>  # 自己定义的名字
+		<field name="model">object_name</field>  # 模型名称 
+		<field name="priority eval="16">  # 优先级,数值越低优先级越高
+		<field name="arch" type="xml">  #arch的type必需设置
+			<!-- view content: <form><tree><graph>... -->类型
+		</field>
+	</record>
+	
+	tree(视图列表)
+		<tree string="Idea list">
+			<field name="name"/>
+			<field name="inventor_id"/>
+		</tree>
+	
+	form(表单视图)
+		<form string="Student Info">
+			<sheet>
+				<group>
+					<field name="name"/>
+					<field name="age"/>
+					<field name="score"/>
+					<field name="sex"/>
+				 </group>
+			 </sheet>
+		 </form>
+		 特殊标签
+		 	group
+				字段必须放在group里面才能在页面上显示字段的名称
+				用于定义栏目在表单中布局，默认情况下一个group定义两个列，并且每个最直接的子元素占用一个列，field类型的元素默认显示一个标签
+				group占用的列数是可以通过col属性自定义的，默认2个；其他元素可以通过colspan属性来定义占的列数，
+				子元素是横向布局的，可以通过设置string 属性来定义group所展示的标题
+			notebook
+				定义一个tab块，每一个tab通过一个page子元素定义，每个page可以有以下属性：
+				string (required) --tab标签的名称
+				accesskey --html accesskey
+				attrs --基于记录值的动态属性
+			sheet
+				字段放在sheet里面作用是显示时有一种纸张的感觉，如果不放在
+				sheet下面就没有这种效果
+			header
+				与sheet一起使用，显示在sheet的上方的一个条，一般用于
+				显示工作流和状态栏
+		 练习：
+		 	给openacademy.course添加form视图并使用notebook
+			form视图也可以直接写在html但是要闭合单标签
+				<form string="Course Form">
+					<sheet>
+						<group string="科目名称">
+							<field name="name"/>
+						</group>
+						<notebook>
+							<page string="Description">
+								<field name="description"/>
+							</page>
+							<page string="About">
+								This is an example of notebooks
+							</page>
+						</notebook>
+					</sheet>
+				</form>
+	搜索视图
+		odoo默认提供对name字段的搜索
+		练习：
+			给openacademy.course添加search视图
+
+六、 模型关联
+	多张表中记录的关联方式
+	Relational fields
+	关联字段
+	Many2one直接关联已经存在的表
+		多对一的关系
+		示例：
+			responsible_id = fields.Many2one('res.user', ondelete='set null', string="负责人", index=True)
+	One2many虚拟的关系
+		定义：
+			一对多关系，是一个虚拟的表关系，依赖于Many2one，通过fields.One2many声明。
+		注意：
+			该关系需要many-表中已经声明Many2one，否则失效inverse_name为many表中Many2one的字段名
+		示例：
+			attachment_ids = fields.One2many('demo.attachment', 'project_id', string=u'附件列表')
+	Many2many
+		建立一张单独的表维护关系
+		多对多关系，通过fields.Many2many声明。
+		user_ids = fields.Many2many('res.partner', string='Attendees')
+		声明的结果是，数据库会生成一个表单，维护两个表的map id
+
+七、 模型的继承
+	odoo提供三种继承机制：
+		扩展其他模块中定义的模型，替换以前的版本
+		从现有模型创建新模型，向副本中添加新信息，但保留原始模块原样
+		将一些模型的字段委托给它包含的记录
+	1. 原型继承
+		当同时使用 _inherit 和 _name 属性时， Odoo使用现有的模型作为基础来创建一个新的模型（通过提供 _inherit ）。
+		这个新的模型从基础模型中获取所有的字段，方法和元信息（默认值和al）
+		第二个模型继承了第一个模型的 check 方法和 name 字段，但是覆盖了 call 方法，因为当使用标准 Python inheritance 。
+		
+
+	2. 扩展继承
+		示例：
+			class Extension0(models.Model):
+			_name = 'extension.0'
+			name = fields.Char(default="A")
+
+			class Extension1(models.Model):
+			_inherit = 'extension.0'
+			description = fields.Char(default="Extended")
+		注意：
+			1.这种方式不会在数据库中创建新的表，直接在原来的表中进行修改
+			2.添加的字段可以在原来的视图中使用
+		
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

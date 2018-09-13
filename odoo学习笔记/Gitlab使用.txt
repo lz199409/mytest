@@ -1,0 +1,9 @@
+Gitlab使用：
+1. 内网账号登录
+2. 添加公钥
+3. git clone
+http://git.inspur.com/PS/PSCloud.git
+4. git checkout dev
+5. 新建并切换到新分支
+6. 上传到新分支
+7. 合并到dev

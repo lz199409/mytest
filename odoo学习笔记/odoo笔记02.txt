@@ -1,0 +1,26 @@
+odoo基础开发 http://devecho.com
+odoo介绍
+	ERP(Enterprise Resource Planning)：
+	企业资源计划
+		
+		应用范围从制造业扩展到了零售业、服务业、银行业、电信业、
+		政府机关和学校等事业部门，通过融合数据库技术、
+		图形用户界面、第四代查询语言、客户服务器结构、
+		计算机辅助开发工具、可移植的开放系统等对企业资源进行了有效的集成。
+		
+		针对物资资源管理（物流）、人力资源管理（人流）、财务资源管理（财流）、信息资源管理（信息流）集成一体化的企业管理软件
+
+	odoo是一套开源的ERP软件
+	目前odoo基础模块已经覆盖了ERP方方面面，只要适当修改就可满足客户需求
+
+	odoo最初名称是tinyerp后改名为openerp从8.0开始更名为odoo
+	官网：https://www.odoo.com
+	github: https://github.com/odoo/odoo
+	wiki https://en.wikipedia.org/wiki.Odoo
+	
+	交流平台：
+		官网论坛：http://forum.odoo.com
+		google stackoverflow QQ群等
+
+	
+	
